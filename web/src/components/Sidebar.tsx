@@ -34,12 +34,14 @@ export function Sidebar({ selected, onSelect, collapsed, onToggle }: Props) {
   const [sessionsByProject, setSessionsByProject] = useState<Record<string, SessionListItem[]>>({});
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
+  const [source, setSource] = useState<"all" | "claude" | "opencode">("all");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     api.projects().then((p) => {
       setProjects(p);
       if (p[0]) setExpanded(new Set([p[0].slug]));
-    });
+    }).catch((e) => setError(String(e)));
   }, []);
 
   useEffect(() => {
@@ -47,20 +49,20 @@ export function Sidebar({ selected, onSelect, collapsed, onToggle }: Props) {
       if (!sessionsByProject[slug]) {
         api.sessions(slug).then((s) => {
           setSessionsByProject((prev) => ({ ...prev, [slug]: s }));
-        });
+        }).catch((e) => { setError(String(e)); setSessionsByProject((prev) => ({ ...prev, [slug]: [] })); });
       }
     }
   }, [expanded]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
-    if (!q) return projects;
     return projects.filter(
       (p) =>
-        p.path.toLowerCase().includes(q) ||
-        (sessionsByProject[p.slug] ?? []).some((s) => s.title.toLowerCase().includes(q)),
+        (source === "all" || p.source === source) &&
+        (!q || p.path.toLowerCase().includes(q) ||
+        (sessionsByProject[p.slug] ?? []).some((s) => s.title.toLowerCase().includes(q))),
     );
-  }, [projects, query, sessionsByProject]);
+  }, [projects, query, sessionsByProject, source]);
 
   if (collapsed) {
     return (
@@ -92,12 +94,20 @@ export function Sidebar({ selected, onSelect, collapsed, onToggle }: Props) {
             «
           </button>
         </div>
+        <div className="source-filter">
+          {(["all", "claude", "opencode"] as const).map((s) => (
+            <button key={s} className={source === s ? "active" : ""} onClick={() => setSource(s)}>
+              {s === "all" ? "All" : s === "claude" ? "Claude" : "OpenCode"}
+            </button>
+          ))}
+        </div>
         <input
           placeholder="Search projects or titles…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
+      {error && <div className="empty-state-sidebar" role="alert">{error}</div>}
       {filtered.length === 0 && (
         <div className="empty-state-sidebar">No matches.</div>
       )}
@@ -119,7 +129,7 @@ export function Sidebar({ selected, onSelect, collapsed, onToggle }: Props) {
               title={p.path}
             >
               <span className="chevron">▶</span>
-              <span className="label">{shortLabel}</span>
+               <span className="label">{p.source === "opencode" ? "OpenCode · " : "Claude · "}{shortLabel}</span>
               <span className="count">{p.sessionCount}</span>
             </div>
             {isOpen && (sessionsByProject[p.slug] ?? []).map((s) => (

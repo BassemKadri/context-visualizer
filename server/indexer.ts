@@ -118,6 +118,7 @@ export async function listProjects(): Promise<ProjectInfo[]> {
     });
     const cwd = latestFile ? await firstCwdQuick(join(dirPath, latestFile)) : null;
     return {
+      source: "claude",
       slug: e.name,
       path: cwd ?? decodeProjectSlug(e.name),
       sessionCount: files.length,
@@ -228,6 +229,7 @@ export async function listSessions(projectSlug: string): Promise<SessionListItem
     try {
       const meta = await indexSessionFile(filePath);
       return {
+        source: "claude",
         id: meta.id,
         project: projectSlug,
         projectPath: meta.cwd ?? decodeProjectSlug(projectSlug),
@@ -240,6 +242,7 @@ export async function listSessions(projectSlug: string): Promise<SessionListItem
       };
     } catch {
       return {
+        source: "claude",
         id: basename(f, ".jsonl"),
         project: projectSlug,
         projectPath: decodeProjectSlug(projectSlug),

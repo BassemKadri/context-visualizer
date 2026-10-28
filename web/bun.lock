@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "visualizer-web",
+      "name": "context-visualizer-web",
       "dependencies": {
         "echarts": "^5.5.0",
         "react": "^18.3.1",

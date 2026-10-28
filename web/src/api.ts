@@ -1,4 +1,5 @@
 export type SessionListItem = {
+  source: "claude" | "opencode";
   id: string;
   project: string;
   projectPath: string;
@@ -11,6 +12,7 @@ export type SessionListItem = {
 };
 
 export type ProjectInfo = {
+  source: "claude" | "opencode";
   slug: string;
   path: string;
   sessionCount: number;

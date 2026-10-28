@@ -102,14 +102,16 @@ export function Detail({ session }: Props) {
               <span className="unit">tokens</span>
             </div>
             <div className="hero-pct" style={{ marginTop: 6 }}>
-              {(pct * 100).toFixed(1)}% <span className="of">of {fmt(snap.headline.modelCap)} context window</span>
+              {snap.headline.modelCap > 0
+                ? <>{(pct * 100).toFixed(1)}% <span className="of">of {fmt(snap.headline.modelCap)} context window</span></>
+                : <span className="of">Context limit unavailable for this model</span>}
             </div>
           </div>
           <div className="hero-model">{snap.headline.model}</div>
         </div>
-        <div className="hero-progress">
+        {snap.headline.modelCap > 0 && <div className="hero-progress">
           <div className="hero-progress-bar" style={{ width: `${Math.min(100, pct * 100).toFixed(2)}%` }} />
-        </div>
+        </div>}
         <div className="hero-stats">
           <div className="stat">
             <div className="label">Input</div>
@@ -133,7 +135,7 @@ export function Detail({ session }: Props) {
             <span className="icon">⊘</span>
             <span>
               Compaction at record #{snap.compaction.latestBoundaryAt} ({snap.compaction.trigger}):
-              &nbsp;{fmt(snap.compaction.preTokens)} → {fmt(snap.compaction.postTokens)} tokens.
+               {session.source === "claude" && <>&nbsp;{fmt(snap.compaction.preTokens)} → {fmt(snap.compaction.postTokens)} tokens.</>}
               Only content after this boundary is counted.
             </span>
           </div>

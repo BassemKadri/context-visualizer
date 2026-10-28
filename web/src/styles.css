@@ -607,3 +607,6 @@ button { font-family: inherit; font-size: inherit; color: inherit; cursor: point
   vertical-align: middle;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+.source-filter { display: flex; gap: 4px; margin: 10px 0; }
+.source-filter button { flex: 1; padding: 5px 3px; color: var(--text-muted); background: transparent; border: 1px solid var(--border-strong); border-radius: 5px; cursor: pointer; }
+.source-filter button.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
