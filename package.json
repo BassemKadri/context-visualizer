@@ -4,8 +4,11 @@
   "version": "0.1.0",
   "description": "Local web app to visualize Claude Code, OpenCode, and Codex session context.",
   "license": "GPL-3.0-or-later",
+  "bin": {
+    "context-visualizer": "scripts/cli.ts"
+  },
   "scripts": {
-    "dev": "bun run dev:server & bun run dev:web",
+    "dev": "bun scripts/cli.ts",
     "dev:server": "bun --watch server/index.ts",
     "dev:web": "cd web && bun run dev",
     "build:web": "cd web && bun run build",

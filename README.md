@@ -33,6 +33,20 @@ Starts the API (port 5174) and the Vite dev server (port 5173) — open
 To build the frontend for production: `bun run build:web` (outputs `web/dist`); run the
 API with `bun run start`.
 
+To make the launcher available from any terminal, run this once from the project directory:
+
+```sh
+bun link
+```
+
+Then start the app with:
+
+```sh
+context-visualizer
+```
+
+The command opens the browser automatically. Pass `--no-open` to only start the servers.
+
 ## How it works
 
 - The **headline total** comes straight from the `usage` field of the latest assistant
