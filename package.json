@@ -2,7 +2,7 @@
   "name": "context-visualizer",
   "private": true,
   "version": "0.1.0",
-  "description": "Local web app to visualize Claude Code and OpenCode session context.",
+  "description": "Local web app to visualize Claude Code, OpenCode, and Codex session context.",
   "license": "GPL-3.0-or-later",
   "scripts": {
     "dev": "bun run dev:server & bun run dev:web",

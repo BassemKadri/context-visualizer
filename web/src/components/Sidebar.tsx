@@ -34,7 +34,7 @@ export function Sidebar({ selected, onSelect, collapsed, onToggle }: Props) {
   const [sessionsByProject, setSessionsByProject] = useState<Record<string, SessionListItem[]>>({});
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
-  const [source, setSource] = useState<"all" | "claude" | "opencode">("all");
+  const [source, setSource] = useState<"all" | "claude" | "opencode" | "codex">("all");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -95,9 +95,9 @@ export function Sidebar({ selected, onSelect, collapsed, onToggle }: Props) {
           </button>
         </div>
         <div className="source-filter">
-          {(["all", "claude", "opencode"] as const).map((s) => (
+          {(["all", "claude", "opencode", "codex"] as const).map((s) => (
             <button key={s} className={source === s ? "active" : ""} onClick={() => setSource(s)}>
-              {s === "all" ? "All" : s === "claude" ? "Claude" : "OpenCode"}
+              {s === "all" ? "All" : s === "claude" ? "Claude" : s === "opencode" ? "OpenCode" : "Codex"}
             </button>
           ))}
         </div>
@@ -113,7 +113,8 @@ export function Sidebar({ selected, onSelect, collapsed, onToggle }: Props) {
       )}
       {filtered.map((p) => {
         const isOpen = expanded.has(p.slug);
-        const shortLabel = p.path.split("/").slice(-2).join("/") || p.path;
+        const shortLabel = p.path.split(/[\\/]/).slice(-2).join("/") || p.path;
+        const sourceLabel = p.source === "opencode" ? "OpenCode" : p.source === "codex" ? "Codex" : "Claude";
         return (
           <div key={p.slug} className="project-group">
             <div
@@ -129,7 +130,7 @@ export function Sidebar({ selected, onSelect, collapsed, onToggle }: Props) {
               title={p.path}
             >
               <span className="chevron">▶</span>
-               <span className="label">{p.source === "opencode" ? "OpenCode · " : "Claude · "}{shortLabel}</span>
+               <span className="label">{sourceLabel} · {shortLabel}</span>
               <span className="count">{p.sessionCount}</span>
             </div>
             {isOpen && (sessionsByProject[p.slug] ?? []).map((s) => (

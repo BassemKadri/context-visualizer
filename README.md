@@ -1,12 +1,12 @@
 # Context Visualizer
 
-A small local web app that shows **what's filling the context window** of a Claude Code or
-OpenCode session — system prompt vs. messages vs. tool calls vs. tool results vs. attachments —
+A small local web app that shows **what's filling the context window** of a Claude Code,
+OpenCode, or Codex session — system prompt vs. messages vs. tool calls vs. tool results vs. attachments —
 so you can see what to trim.
 
 It reads the session transcripts Claude Code already writes to
-`~/.claude/projects/**/*.jsonl` (read-only), or accesses OpenCode V2 through its local
-`opencode api` CLI (read-only), and renders a per-session breakdown as a
+`~/.claude/projects/**/*.jsonl` and `~/.codex/sessions/**/*.jsonl` (read-only), or accesses
+OpenCode V2 through its local `opencode api` CLI (read-only), and renders a per-session breakdown as a
 treemap, sunburst, or stacked bar, with a drill-down into the individual heaviest items.
 
 ## Requirements
@@ -50,10 +50,13 @@ API with `bun run start`.
   on each view; its session-level token totals are cumulative and are not shown as context
   totals in the project list. OpenCode category counts use `cl100k_base` estimates (no
   Claude-specific calibration); model context limits vary, so no capacity percentage is shown.
+- Codex snapshots use the latest model call's `input_tokens`. Cached input is already included
+  in that number, so it is not added a second time. Visible categories use `cl100k_base`
+  estimates; hidden instructions, tool schemas, and encrypted reasoning remain in the residual.
 
 ## Project layout
 
-- `server/` — Bun HTTP API: reads/parses Claude JSONL or queries OpenCode's local API,
+- `server/` — Bun HTTP API: reads/parses Claude and Codex JSONL or queries OpenCode's local API,
   tokenizes visible content, computes the snapshot.
 - `web/` — React + Vite frontend (ECharts for the visualizations).
 

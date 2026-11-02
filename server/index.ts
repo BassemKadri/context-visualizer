@@ -3,6 +3,7 @@ import { listProjects, listSessions, findSessionById } from "./indexer.ts";
 import { computeSnapshot } from "./snapshot.ts";
 import { readCached, writeCached, invalidateCache } from "./cache.ts";
 import { listOpenCodeProjects, listOpenCodeSessions, computeOpenCodeSnapshot } from "./opencode.ts";
+import { computeCodexSnapshot, findCodexSessionById, listCodexProjects, listCodexSessions } from "./codex.ts";
 
 const PORT = Number(process.env.PORT ?? 5174);
 
@@ -38,7 +39,7 @@ const server = Bun.serve({
       if (path === "/api/health") return json({ ok: true });
 
       if (path === "/api/projects" && req.method === "GET") {
-        const [claude, opencode] = await Promise.all([
+        const [claude, opencode, codex] = await Promise.all([
           listProjects().catch((e) => {
             if (e?.code === "ENOENT") return [];
             throw e;
@@ -47,27 +48,38 @@ const server = Bun.serve({
             console.warn("[opencode] unavailable:", e);
             return [];
           }),
+          listCodexProjects().catch((e) => {
+            if (e?.code === "ENOENT") return [];
+            console.warn("[codex] unavailable:", e);
+            return [];
+          }),
         ]);
-        return json([...claude, ...opencode].sort((a, b) => b.latestMtimeMs - a.latestMtimeMs));
+        return json([...claude, ...opencode, ...codex].sort((a, b) => b.latestMtimeMs - a.latestMtimeMs));
       }
 
       if (path === "/api/sessions" && req.method === "GET") {
         const project = url.searchParams.get("project");
         if (!project) return json({ error: "project required" }, { status: 400 });
         return json(project.startsWith("opencode:")
-          ? await listOpenCodeSessions(project) : await listSessions(project));
+          ? await listOpenCodeSessions(project)
+          : project.startsWith("codex:")
+            ? await listCodexSessions(project)
+            : await listSessions(project));
       }
 
       const snapshotMatch = path.match(/^\/api\/sessions\/([^/]+)\/snapshot$/);
       if (snapshotMatch && req.method === "GET") {
         const sessionId = snapshotMatch[1]!;
         if (sessionId.startsWith("ses_")) return json({ ...await computeOpenCodeSnapshot(sessionId), fromCache: false });
-        const filePath = await findSessionById(sessionId);
+        const isCodex = sessionId.startsWith("codex_");
+        const filePath = isCodex ? await findCodexSessionById(sessionId) : await findSessionById(sessionId);
         if (!filePath) return notFound("session not found");
         const st = await stat(filePath);
         const cached = await readCached(sessionId, st.mtimeMs);
         if (cached) return json({ ...cached, fromCache: true });
-        const snap = await computeSnapshot(filePath, st.mtimeMs);
+        const snap = isCodex
+          ? await computeCodexSnapshot(filePath, st.mtimeMs, sessionId)
+          : await computeSnapshot(filePath, st.mtimeMs);
         await writeCached(snap);
         return json({ ...snap, fromCache: false });
       }
